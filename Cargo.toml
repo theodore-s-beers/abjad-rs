@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Theo Beers <theo.beers@fu-berlin.de>"]
 edition = "2018"
 categories = ["internationalization", "text-processing"]
+
+[dependencies]
+anyhow = "1.0.40"
