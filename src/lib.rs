@@ -84,6 +84,14 @@ mod tests {
     }
 
     #[test]
+    fn mixture_fail() {
+        let input = "روح الله tapdancing خمینی";
+        let prefs: AbjadPrefs = Default::default();
+
+        assert!(abjad_strict(input, prefs).is_err());
+    }
+
+    #[test]
     fn mixture_report() {
         let input = "روح الله tapdancing خمینی";
         let prefs: AbjadPrefs = Default::default();
@@ -326,7 +334,10 @@ fn get_letter_value(
         // Space or zwnj is ok
         ' ' | '‌' => {}
         // Otherwise return error
-        _ => return Err(anyhow!("Unrecognized character")),
+        _ => {
+            let escaped: String = character.escape_unicode().collect();
+            return Err(anyhow!("Unrecognized character: {}", escaped));
+        }
     }
 
     Ok(letter_value)
