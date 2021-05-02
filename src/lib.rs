@@ -14,8 +14,8 @@ mod tests {
             ..Default::default()
         };
 
-        let total_mashriqi = abjad_strict(input, prefs_mashriqi).unwrap();
-        let total_maghribi = abjad_strict(input, prefs_maghribi).unwrap();
+        let total_mashriqi = input.abjad_strict(prefs_mashriqi).unwrap();
+        let total_maghribi = input.abjad_strict(prefs_maghribi).unwrap();
 
         assert_eq!(total_mashriqi, 5995);
         assert_eq!(total_mashriqi, total_maghribi);
@@ -26,7 +26,7 @@ mod tests {
         let input = "بهاء";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 9);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 9);
     }
 
     #[test]
@@ -37,7 +37,7 @@ mod tests {
             ..Default::default()
         };
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 8);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 8);
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod tests {
         let input = "بسم الله الرحمن الرحيم";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 786);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 786);
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod tests {
         let input = "همایون پادشاه از بام افتاد";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 962);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 962);
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod tests {
         let input = "the quick brown fox";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad(input, prefs), 0);
+        assert_eq!(input.abjad(prefs), 0);
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod tests {
         let input = "the quick brown fox";
         let prefs: AbjadPrefs = Default::default();
 
-        let (total, errors) = abjad_collect_errors(input, prefs);
+        let (total, errors) = input.abjad_collect_errors(prefs);
 
         assert_eq!(total, 0);
         assert_eq!(errors.len(), 16);
@@ -80,7 +80,7 @@ mod tests {
         let input = "روح الله tapdancing خمینی";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad(input, prefs), 990);
+        assert_eq!(input.abjad(prefs), 990);
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
         let input = "روح الله tapdancing خمینی";
         let prefs: AbjadPrefs = Default::default();
 
-        assert!(abjad_strict(input, prefs).is_err());
+        assert!(input.abjad_strict(prefs).is_err());
     }
 
     #[test]
@@ -96,7 +96,7 @@ mod tests {
         let input = "روح الله tapdancing خمینی";
         let prefs: AbjadPrefs = Default::default();
 
-        let (total, errors) = abjad_collect_errors(input, prefs);
+        let (total, errors) = input.abjad_collect_errors(prefs);
 
         assert_eq!(total, 990);
         assert_eq!(errors.len(), 10);
@@ -110,7 +110,7 @@ mod tests {
             ..Default::default()
         };
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 887);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 887);
     }
 
     #[test]
@@ -118,7 +118,7 @@ mod tests {
         let input = "قد تمّمته";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 989);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 989);
     }
 
     #[test]
@@ -126,7 +126,7 @@ mod tests {
         let input = "وفات وحشی مسکین";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 991);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 991);
     }
 
     #[test]
@@ -134,108 +134,124 @@ mod tests {
         let input = "عادت می‌کنیم";
         let prefs: AbjadPrefs = Default::default();
 
-        assert_eq!(abjad_strict(input, prefs).unwrap(), 645);
+        assert_eq!(input.abjad_strict(prefs).unwrap(), 645);
     }
 }
 
 #[derive(Default)]
-pub struct AbjadPrefs {
-    pub count_shaddah: bool,
-    pub double_alif_maddah: bool,
-    pub ignore_lone_hamzah: bool,
-    pub maghribi_order: bool,
+struct AbjadPrefs {
+    count_shaddah: bool,
+    double_alif_maddah: bool,
+    ignore_lone_hamzah: bool,
+    maghribi_order: bool,
 }
 
-pub fn abjad(input: &str, prefs: AbjadPrefs) -> u32 {
-    let count_shaddah = prefs.count_shaddah;
-    let double_alif_maddah = prefs.double_alif_maddah;
-    let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-    let maghribi_order = prefs.maghribi_order;
+trait AbjadExt {
+    fn abjad(self, prefs: AbjadPrefs) -> u32;
 
-    let mut abjad_total: u32 = 0;
+    fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
 
-    let mut last_value: u32 = 0;
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32>;
+}
 
-    for character in input.chars() {
-        if let Ok(new_value) = get_letter_value(
-            character,
-            last_value,
-            count_shaddah,
-            double_alif_maddah,
-            ignore_lone_hamzah,
-            maghribi_order,
-        ) {
+impl AbjadExt for &str {
+    fn abjad(self, prefs: AbjadPrefs) -> u32 {
+        let input = self;
+
+        let count_shaddah = prefs.count_shaddah;
+        let double_alif_maddah = prefs.double_alif_maddah;
+        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
+        let maghribi_order = prefs.maghribi_order;
+
+        let mut abjad_total: u32 = 0;
+
+        let mut last_value: u32 = 0;
+
+        for character in input.chars() {
+            if let Ok(new_value) = get_letter_value(
+                character,
+                last_value,
+                count_shaddah,
+                double_alif_maddah,
+                ignore_lone_hamzah,
+                maghribi_order,
+            ) {
+                abjad_total += new_value;
+
+                last_value = new_value
+            } else {
+                last_value = 0
+            }
+        }
+
+        abjad_total
+    }
+
+    fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>) {
+        let input = self;
+
+        let count_shaddah = prefs.count_shaddah;
+        let double_alif_maddah = prefs.double_alif_maddah;
+        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
+        let maghribi_order = prefs.maghribi_order;
+
+        let mut abjad_total: u32 = 0;
+
+        let mut errors: Vec<String> = Vec::new();
+
+        let mut last_value: u32 = 0;
+
+        for character in input.chars() {
+            if let Ok(new_value) = get_letter_value(
+                character,
+                last_value,
+                count_shaddah,
+                double_alif_maddah,
+                ignore_lone_hamzah,
+                maghribi_order,
+            ) {
+                abjad_total += new_value;
+
+                last_value = new_value
+            } else {
+                errors.push(character.escape_unicode().collect());
+
+                last_value = 0
+            }
+        }
+
+        (abjad_total, errors)
+    }
+
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32> {
+        let input = self;
+
+        let count_shaddah = prefs.count_shaddah;
+        let double_alif_maddah = prefs.double_alif_maddah;
+        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
+        let maghribi_order = prefs.maghribi_order;
+
+        let mut abjad_total: u32 = 0;
+
+        let mut last_value: u32 = 0;
+
+        for character in input.chars() {
+            let new_value = get_letter_value(
+                character,
+                last_value,
+                count_shaddah,
+                double_alif_maddah,
+                ignore_lone_hamzah,
+                maghribi_order,
+            )?;
+
             abjad_total += new_value;
 
             last_value = new_value
-        } else {
-            last_value = 0
         }
+
+        Ok(abjad_total)
     }
-
-    abjad_total
-}
-
-pub fn abjad_collect_errors(input: &str, prefs: AbjadPrefs) -> (u32, Vec<String>) {
-    let count_shaddah = prefs.count_shaddah;
-    let double_alif_maddah = prefs.double_alif_maddah;
-    let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-    let maghribi_order = prefs.maghribi_order;
-
-    let mut abjad_total: u32 = 0;
-
-    let mut errors: Vec<String> = Vec::new();
-
-    let mut last_value: u32 = 0;
-
-    for character in input.chars() {
-        if let Ok(new_value) = get_letter_value(
-            character,
-            last_value,
-            count_shaddah,
-            double_alif_maddah,
-            ignore_lone_hamzah,
-            maghribi_order,
-        ) {
-            abjad_total += new_value;
-
-            last_value = new_value
-        } else {
-            errors.push(character.escape_unicode().collect());
-
-            last_value = 0
-        }
-    }
-
-    (abjad_total, errors)
-}
-
-pub fn abjad_strict(input: &str, prefs: AbjadPrefs) -> Result<u32> {
-    let count_shaddah = prefs.count_shaddah;
-    let double_alif_maddah = prefs.double_alif_maddah;
-    let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-    let maghribi_order = prefs.maghribi_order;
-
-    let mut abjad_total: u32 = 0;
-
-    let mut last_value: u32 = 0;
-
-    for character in input.chars() {
-        let new_value = get_letter_value(
-            character,
-            last_value,
-            count_shaddah,
-            double_alif_maddah,
-            ignore_lone_hamzah,
-            maghribi_order,
-        )?;
-
-        abjad_total += new_value;
-
-        last_value = new_value
-    }
-
-    Ok(abjad_total)
 }
 
 fn get_letter_value(
