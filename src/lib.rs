@@ -146,7 +146,7 @@ pub struct AbjadPrefs {
     pub maghribi_order: bool,
 }
 
-pub trait AbjadExt {
+pub trait Abjad {
     fn abjad(self, prefs: AbjadPrefs) -> u32;
 
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
@@ -154,7 +154,7 @@ pub trait AbjadExt {
     fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32>;
 }
 
-impl AbjadExt for &str {
+impl Abjad for &str {
     fn abjad(self, prefs: AbjadPrefs) -> u32 {
         let input = self;
 
