@@ -139,14 +139,14 @@ mod tests {
 }
 
 #[derive(Default)]
-struct AbjadPrefs {
+pub struct AbjadPrefs {
     count_shaddah: bool,
     double_alif_maddah: bool,
     ignore_lone_hamzah: bool,
     maghribi_order: bool,
 }
 
-trait AbjadExt {
+pub trait AbjadExt {
     fn abjad(self, prefs: AbjadPrefs) -> u32;
 
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
