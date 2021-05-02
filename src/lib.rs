@@ -140,10 +140,10 @@ mod tests {
 
 #[derive(Default)]
 pub struct AbjadPrefs {
-    count_shaddah: bool,
-    double_alif_maddah: bool,
-    ignore_lone_hamzah: bool,
-    maghribi_order: bool,
+    pub count_shaddah: bool,
+    pub double_alif_maddah: bool,
+    pub ignore_lone_hamzah: bool,
+    pub maghribi_order: bool,
 }
 
 pub trait AbjadExt {
