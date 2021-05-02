@@ -1,3 +1,17 @@
+//! This crate is meant to facilitate calculating the
+//! [numerical _abjad_ value](https://en.wikipedia.org/wiki/Abjad_numerals)
+//! of a string of text in Arabic or Persian (support for other Arabic-script
+//! languages may be added over time).
+//!
+//! At the moment, this simply adds three methods for `&str`:
+//!
+//! - `abjad` returns a best-effort value, ignoring unrecognized characters.
+//! - `abjad_collect_errors` also records unrecognized characters in a `Vec`.
+//! - `abjad_strict` returns an error if a character is not recognized.
+//!
+
+#![deny(missing_docs)]
+
 use anyhow::{anyhow, Result};
 
 #[cfg(test)]
@@ -138,19 +152,38 @@ mod tests {
     }
 }
 
+/// We need to allow some options for _abjad_ calculation. At present there are
+/// four. All are false by default. If you don't need to activate any of them,
+/// when calling one of the methods, you can input `Default::default()`.
 #[derive(Default)]
 pub struct AbjadPrefs {
+    /// Count the [_shaddah_](https://en.wikipedia.org/wiki/Shadda) diacritic?
+    /// This will have the effect of doubling the value of the preceding letter.
     pub count_shaddah: bool,
+
+    /// Count [_alif maddah_](https://en.wiktionary.org/wiki/maddah) as a double
+    /// _alif_ (with value 2 instead of 1)?
     pub double_alif_maddah: bool,
+
+    /// Ignore the pseudo-letter [_hamzah_](https://en.wikipedia.org/wiki/Hamza)
+    /// in its isolated state? (By default it has a value of 1.)
     pub ignore_lone_hamzah: bool,
+
+    /// Use the Maghribi letter order? (Unless you're sure you need this, you
+    /// don't.)
     pub maghribi_order: bool,
 }
 
+/// This is the trait that we implement for `&str`, allowing us to use the new
+/// methods.
 pub trait Abjad {
+    /// This returns a best-effort value, ignoring unrecognized characters.
     fn abjad(self, prefs: AbjadPrefs) -> u32;
 
+    /// This also records unrecognized characters in a `Vec`.
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
 
+    /// This returns an error if a character is not recognized.
     fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32>;
 }
 
