@@ -10,6 +10,8 @@
 //! - `abjad_strict` returns an error if a character is not recognized.
 //!
 
+#![warn(clippy::pedantic, clippy::cargo)]
+#![allow(clippy::fn_params_excessive_bools, clippy::struct_excessive_bools)]
 #![deny(missing_docs)]
 
 use anyhow::{anyhow, Result};
@@ -183,7 +185,9 @@ pub trait Abjad {
     /// This also records unrecognized characters in a `Vec`.
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
 
-    /// This returns an error if a character is not recognized.
+    /// # Errors
+    ///
+    /// This returns an error if any character is not recognized.
     fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32>;
 }
 
@@ -211,9 +215,9 @@ impl Abjad for &str {
             ) {
                 abjad_total += new_value;
 
-                last_value = new_value
+                last_value = new_value;
             } else {
-                last_value = 0
+                last_value = 0;
             }
         }
 
@@ -245,11 +249,11 @@ impl Abjad for &str {
             ) {
                 abjad_total += new_value;
 
-                last_value = new_value
+                last_value = new_value;
             } else {
                 errors.push(character.escape_unicode().collect());
 
-                last_value = 0
+                last_value = 0;
             }
         }
 
@@ -280,7 +284,7 @@ impl Abjad for &str {
 
             abjad_total += new_value;
 
-            last_value = new_value
+            last_value = new_value;
         }
 
         Ok(abjad_total)
@@ -301,14 +305,14 @@ fn get_letter_value(
         'ا' | 'أ' | 'إ' | 'ٱ' => letter_value = 1,
         'آ' => {
             if double_alif_maddah {
-                letter_value = 2
+                letter_value = 2;
             } else {
-                letter_value = 1
+                letter_value = 1;
             }
         }
         'ء' => {
             if !ignore_lone_hamzah {
-                letter_value = 1
+                letter_value = 1;
             }
         }
         'ب' | 'پ' => letter_value = 2,
@@ -344,9 +348,9 @@ fn get_letter_value(
         'ر' => letter_value = 200,
         'ش' => {
             if maghribi_order {
-                letter_value = 1000
+                letter_value = 1000;
             } else {
-                letter_value = 300
+                letter_value = 300;
             }
         }
         'ت' => letter_value = 400,
@@ -355,23 +359,23 @@ fn get_letter_value(
         'ذ' => letter_value = 700,
         'ض' => {
             if maghribi_order {
-                letter_value = 90
+                letter_value = 90;
             } else {
-                letter_value = 800
+                letter_value = 800;
             }
         }
         'ظ' => {
             if maghribi_order {
-                letter_value = 800
+                letter_value = 800;
             } else {
-                letter_value = 900
+                letter_value = 900;
             }
         }
         'غ' => {
             if maghribi_order {
-                letter_value = 900
+                letter_value = 900;
             } else {
-                letter_value = 1000
+                letter_value = 1000;
             }
         }
         // Next is the shaddah diacritic; will probably look funny
