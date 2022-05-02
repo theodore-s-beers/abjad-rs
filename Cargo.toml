@@ -12,4 +12,4 @@ readme = "README.md"
 repository = "https://github.com/theodore-s-beers/abjad-rs"
 
 [dependencies]
-anyhow = "1.0.56"
+anyhow = "1.0.57"
