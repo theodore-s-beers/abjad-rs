@@ -7,19 +7,31 @@
 //!
 //! - `abjad` returns a best-effort value, ignoring unrecognized characters.
 //! - `abjad_collect_errors` also records unrecognized characters in a `Vec`.
-//! - `abjad_strict` returns an error if a character is not recognized.
+//! - `abjad_strict` returns an error as soon as any character is not recognized.
 //!
 
 #![deny(missing_docs)]
 #![warn(clippy::pedantic, clippy::cargo)]
 #![allow(clippy::fn_params_excessive_bools, clippy::struct_excessive_bools)]
 
-use anyhow::anyhow;
+use thiserror::Error;
+
+/// The error type for this crate. Currently there is only one member:
+/// `UnrecognizedCharacter`, which is returned by `abjad_strict` upon encountering
+/// any character outside of the Arabic script.
+#[derive(Error, Debug)]
+pub enum AbjadError {
+    /// This error is returned by `abjad_strict` upon encountering any character
+    /// outside of the Arabic script. It reports the Unicode escape sequence for
+    /// the character in question.
+    #[error("Unrecognized character: {0}")]
+    UnrecognizedCharacter(String),
+}
 
 /// We need to allow some options for _abjad_ calculation. At present there are
 /// four. All are false by default. If you don't need to activate any of them,
-/// when calling one of the methods, you can pass `Default::default()`.
-#[derive(Default)]
+/// when calling one of the methods, you can pass `AbjadPrefs::default()`.
+#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AbjadPrefs {
     /// Count the [_shaddah_](https://en.wikipedia.org/wiki/Shadda) diacritic?
     /// This will have the effect of doubling the value of the preceding letter.
@@ -49,7 +61,7 @@ pub trait Abjad {
 
     /// # Errors
     /// This returns an error if any character is not recognized.
-    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, anyhow::Error>;
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, AbjadError>;
 }
 
 impl Abjad for &str {
@@ -101,7 +113,7 @@ impl Abjad for &str {
         (abjad_total, errors)
     }
 
-    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, anyhow::Error> {
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, AbjadError> {
         let mut abjad_total: u32 = 0;
         let mut last_value: u32 = 0;
 
@@ -130,7 +142,7 @@ fn get_letter_value(
     double_alif_maddah: bool,
     ignore_lone_hamzah: bool,
     maghribi_order: bool,
-) -> Result<u32, anyhow::Error> {
+) -> Result<u32, AbjadError> {
     let mut letter_value: u32 = 0;
 
     match character {
@@ -221,7 +233,7 @@ fn get_letter_value(
         // Otherwise return error
         _ => {
             let escaped: String = character.escape_unicode().collect();
-            return Err(anyhow!("Unrecognized character: {}", escaped));
+            return Err(AbjadError::UnrecognizedCharacter(escaped));
         }
     }
 

@@ -4,23 +4,23 @@ use abjad::{Abjad, AbjadPrefs};
 fn all() {
     let input = "ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ";
 
-    let prefs_mashriqi: AbjadPrefs = Default::default();
+    let prefs_mashriqi = AbjadPrefs::default();
     let prefs_maghribi = AbjadPrefs {
         maghribi_order: true,
-        ..Default::default()
+        ..AbjadPrefs::default()
     };
 
     let total_mashriqi = input.abjad_strict(prefs_mashriqi).unwrap();
     let total_maghribi = input.abjad_strict(prefs_maghribi).unwrap();
 
-    assert_eq!(total_mashriqi, 5995);
+    assert_eq!(total_mashriqi, 5_995);
     assert_eq!(total_mashriqi, total_maghribi);
 }
 
 #[test]
 fn baha_count() {
     let input = "بهاء";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 9);
 }
@@ -30,7 +30,7 @@ fn baha_ignore() {
     let input = "بهاء";
     let prefs = AbjadPrefs {
         ignore_lone_hamzah: true,
-        ..Default::default()
+        ..AbjadPrefs::default()
     };
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 8);
@@ -39,7 +39,7 @@ fn baha_ignore() {
 #[test]
 fn basmala() {
     let input = "بسم الله الرحمن الرحيم";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 786);
 }
@@ -47,7 +47,7 @@ fn basmala() {
 #[test]
 fn humayun() {
     let input = "همایون پادشاه از بام افتاد";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 962);
 }
@@ -55,7 +55,7 @@ fn humayun() {
 #[test]
 fn latin() {
     let input = "the quick brown fox";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad(prefs), 0);
 }
@@ -63,7 +63,7 @@ fn latin() {
 #[test]
 fn latin_report() {
     let input = "the quick brown fox";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     let (total, errors) = input.abjad_collect_errors(prefs);
 
@@ -74,7 +74,7 @@ fn latin_report() {
 #[test]
 fn mixture() {
     let input = "روح الله tapdancing خمینی";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad(prefs), 990);
 }
@@ -82,7 +82,7 @@ fn mixture() {
 #[test]
 fn mixture_fail() {
     let input = "روح الله tapdancing خمینی";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert!(input.abjad_strict(prefs).is_err());
 }
@@ -90,7 +90,7 @@ fn mixture_fail() {
 #[test]
 fn mixture_report() {
     let input = "روح الله tapdancing خمینی";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     let (total, errors) = input.abjad_collect_errors(prefs);
 
@@ -103,7 +103,7 @@ fn shaddah() {
     let input = "رئیس مؤسّس دانشگاه";
     let prefs = AbjadPrefs {
         count_shaddah: true,
-        ..Default::default()
+        ..AbjadPrefs::default()
     };
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 887);
@@ -112,7 +112,7 @@ fn shaddah() {
 #[test]
 fn tammamtu() {
     let input = "قد تمّمته";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 989);
 }
@@ -120,7 +120,7 @@ fn tammamtu() {
 #[test]
 fn vahshi() {
     let input = "وفات وحشی مسکین";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 991);
 }
@@ -128,7 +128,7 @@ fn vahshi() {
 #[test]
 fn zwnj() {
     let input = "عادت می‌کنیم";
-    let prefs: AbjadPrefs = Default::default();
+    let prefs = AbjadPrefs::default();
 
     assert_eq!(input.abjad_strict(prefs).unwrap(), 645);
 }
