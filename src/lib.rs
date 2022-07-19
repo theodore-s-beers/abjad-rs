@@ -1,4 +1,4 @@
-//! This crate is meant to facilitate calculating the
+//! This library is meant to facilitate calculating the
 //! [numerical _abjad_ value](https://en.wikipedia.org/wiki/Abjad_numerals)
 //! of a string of text in Arabic or Persian (support for other Arabic-script
 //! languages may be added over time).
@@ -56,11 +56,12 @@ pub trait Abjad {
     /// This returns a best-effort value, ignoring unrecognized characters.
     fn abjad(self, prefs: AbjadPrefs) -> u32;
 
-    /// This returns a tuple, with unrecognized characters in a `Vec`.
+    /// This returns a tuple, with unrecognized characters (Unicode-escaped)
+    /// in a `Vec`.
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
 
     /// # Errors
-    /// This returns an error if any character is not recognized.
+    /// This returns an error as soon as any unrecognized character is encountered.
     fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, AbjadError>;
 }
 
