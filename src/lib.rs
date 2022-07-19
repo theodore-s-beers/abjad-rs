@@ -10,153 +10,15 @@
 //! - `abjad_strict` returns an error if a character is not recognized.
 //!
 
+#![deny(missing_docs)]
 #![warn(clippy::pedantic, clippy::cargo)]
 #![allow(clippy::fn_params_excessive_bools, clippy::struct_excessive_bools)]
-#![deny(missing_docs)]
 
-use anyhow::{anyhow, Result};
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn all() {
-        let input = "ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ";
-
-        let prefs_mashriqi: AbjadPrefs = Default::default();
-        let prefs_maghribi = AbjadPrefs {
-            maghribi_order: true,
-            ..Default::default()
-        };
-
-        let total_mashriqi = input.abjad_strict(prefs_mashriqi).unwrap();
-        let total_maghribi = input.abjad_strict(prefs_maghribi).unwrap();
-
-        assert_eq!(total_mashriqi, 5995);
-        assert_eq!(total_mashriqi, total_maghribi);
-    }
-
-    #[test]
-    fn baha_count() {
-        let input = "بهاء";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 9);
-    }
-
-    #[test]
-    fn baha_ignore() {
-        let input = "بهاء";
-        let prefs = AbjadPrefs {
-            ignore_lone_hamzah: true,
-            ..Default::default()
-        };
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 8);
-    }
-
-    #[test]
-    fn basmala() {
-        let input = "بسم الله الرحمن الرحيم";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 786);
-    }
-
-    #[test]
-    fn humayun() {
-        let input = "همایون پادشاه از بام افتاد";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 962);
-    }
-
-    #[test]
-    fn latin() {
-        let input = "the quick brown fox";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad(prefs), 0);
-    }
-
-    #[test]
-    fn latin_report() {
-        let input = "the quick brown fox";
-        let prefs: AbjadPrefs = Default::default();
-
-        let (total, errors) = input.abjad_collect_errors(prefs);
-
-        assert_eq!(total, 0);
-        assert_eq!(errors.len(), 16);
-    }
-
-    #[test]
-    fn mixture() {
-        let input = "روح الله tapdancing خمینی";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad(prefs), 990);
-    }
-
-    #[test]
-    fn mixture_fail() {
-        let input = "روح الله tapdancing خمینی";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert!(input.abjad_strict(prefs).is_err());
-    }
-
-    #[test]
-    fn mixture_report() {
-        let input = "روح الله tapdancing خمینی";
-        let prefs: AbjadPrefs = Default::default();
-
-        let (total, errors) = input.abjad_collect_errors(prefs);
-
-        assert_eq!(total, 990);
-        assert_eq!(errors.len(), 10);
-    }
-
-    #[test]
-    fn shaddah() {
-        let input = "رئیس مؤسّس دانشگاه";
-        let prefs = AbjadPrefs {
-            count_shaddah: true,
-            ..Default::default()
-        };
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 887);
-    }
-
-    #[test]
-    fn tammamtu() {
-        let input = "قد تمّمته";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 989);
-    }
-
-    #[test]
-    fn vahshi() {
-        let input = "وفات وحشی مسکین";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 991);
-    }
-
-    #[test]
-    fn zwnj() {
-        let input = "عادت می‌کنیم";
-        let prefs: AbjadPrefs = Default::default();
-
-        assert_eq!(input.abjad_strict(prefs).unwrap(), 645);
-    }
-}
+use anyhow::anyhow;
 
 /// We need to allow some options for _abjad_ calculation. At present there are
 /// four. All are false by default. If you don't need to activate any of them,
-/// when calling one of the methods, you can input `Default::default()`.
+/// when calling one of the methods, you can pass `Default::default()`.
 #[derive(Default)]
 pub struct AbjadPrefs {
     /// Count the [_shaddah_](https://en.wikipedia.org/wiki/Shadda) diacritic?
@@ -168,7 +30,7 @@ pub struct AbjadPrefs {
     pub double_alif_maddah: bool,
 
     /// Ignore the pseudo-letter [_hamzah_](https://en.wikipedia.org/wiki/Hamza)
-    /// in its isolated state? (By default it has a value of 1.)
+    /// in its isolated state? (By default we assign it a value of 1.)
     pub ignore_lone_hamzah: bool,
 
     /// Use the Maghribi letter order? (Unless you're sure you need this, you
@@ -182,39 +44,29 @@ pub trait Abjad {
     /// This returns a best-effort value, ignoring unrecognized characters.
     fn abjad(self, prefs: AbjadPrefs) -> u32;
 
-    /// This also records unrecognized characters in a `Vec`.
+    /// This returns a tuple, with unrecognized characters in a `Vec`.
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>);
 
     /// # Errors
-    ///
     /// This returns an error if any character is not recognized.
-    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32>;
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, anyhow::Error>;
 }
 
 impl Abjad for &str {
     fn abjad(self, prefs: AbjadPrefs) -> u32 {
-        let input = self;
-
-        let count_shaddah = prefs.count_shaddah;
-        let double_alif_maddah = prefs.double_alif_maddah;
-        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-        let maghribi_order = prefs.maghribi_order;
-
         let mut abjad_total: u32 = 0;
-
         let mut last_value: u32 = 0;
 
-        for character in input.chars() {
+        for character in self.chars() {
             if let Ok(new_value) = get_letter_value(
                 character,
                 last_value,
-                count_shaddah,
-                double_alif_maddah,
-                ignore_lone_hamzah,
-                maghribi_order,
+                prefs.count_shaddah,
+                prefs.double_alif_maddah,
+                prefs.ignore_lone_hamzah,
+                prefs.maghribi_order,
             ) {
                 abjad_total += new_value;
-
                 last_value = new_value;
             } else {
                 last_value = 0;
@@ -225,34 +77,23 @@ impl Abjad for &str {
     }
 
     fn abjad_collect_errors(self, prefs: AbjadPrefs) -> (u32, Vec<String>) {
-        let input = self;
-
-        let count_shaddah = prefs.count_shaddah;
-        let double_alif_maddah = prefs.double_alif_maddah;
-        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-        let maghribi_order = prefs.maghribi_order;
-
         let mut abjad_total: u32 = 0;
-
         let mut errors: Vec<String> = Vec::new();
-
         let mut last_value: u32 = 0;
 
-        for character in input.chars() {
+        for character in self.chars() {
             if let Ok(new_value) = get_letter_value(
                 character,
                 last_value,
-                count_shaddah,
-                double_alif_maddah,
-                ignore_lone_hamzah,
-                maghribi_order,
+                prefs.count_shaddah,
+                prefs.double_alif_maddah,
+                prefs.ignore_lone_hamzah,
+                prefs.maghribi_order,
             ) {
                 abjad_total += new_value;
-
                 last_value = new_value;
             } else {
                 errors.push(character.escape_unicode().collect());
-
                 last_value = 0;
             }
         }
@@ -260,30 +101,21 @@ impl Abjad for &str {
         (abjad_total, errors)
     }
 
-    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32> {
-        let input = self;
-
-        let count_shaddah = prefs.count_shaddah;
-        let double_alif_maddah = prefs.double_alif_maddah;
-        let ignore_lone_hamzah = prefs.ignore_lone_hamzah;
-        let maghribi_order = prefs.maghribi_order;
-
+    fn abjad_strict(self, prefs: AbjadPrefs) -> Result<u32, anyhow::Error> {
         let mut abjad_total: u32 = 0;
-
         let mut last_value: u32 = 0;
 
-        for character in input.chars() {
+        for character in self.chars() {
             let new_value = get_letter_value(
                 character,
                 last_value,
-                count_shaddah,
-                double_alif_maddah,
-                ignore_lone_hamzah,
-                maghribi_order,
+                prefs.count_shaddah,
+                prefs.double_alif_maddah,
+                prefs.ignore_lone_hamzah,
+                prefs.maghribi_order,
             )?;
 
             abjad_total += new_value;
-
             last_value = new_value;
         }
 
@@ -298,7 +130,7 @@ fn get_letter_value(
     double_alif_maddah: bool,
     ignore_lone_hamzah: bool,
     maghribi_order: bool,
-) -> Result<u32> {
+) -> Result<u32, anyhow::Error> {
     let mut letter_value: u32 = 0;
 
     match character {
@@ -378,14 +210,14 @@ fn get_letter_value(
                 letter_value = 1000;
             }
         }
-        // Next is the shaddah diacritic; will probably look funny
-        'ّ' => {
+        // Shaddah diacritic
+        '\u{0651}' => {
             if count_shaddah {
                 letter_value = last_value;
             }
         }
         // Space or zwnj is ok
-        ' ' | '‌' => {}
+        ' ' | '\u{200C}' => {}
         // Otherwise return error
         _ => {
             let escaped: String = character.escape_unicode().collect();
