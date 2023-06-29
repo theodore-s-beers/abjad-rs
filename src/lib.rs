@@ -12,7 +12,6 @@
 
 #![deny(missing_docs)]
 #![warn(clippy::pedantic, clippy::cargo)]
-#![allow(clippy::fn_params_excessive_bools, clippy::struct_excessive_bools)]
 
 use thiserror::Error;
 
@@ -45,9 +44,19 @@ pub struct AbjadPrefs {
     /// in its isolated state? (By default we assign it a value of 1.)
     pub ignore_lone_hamzah: bool,
 
-    /// Use the Maghribi letter order? (Unless you're sure you need this, you
-    /// don't.)
-    pub maghribi_order: bool,
+    /// Which letter order to use: Mashriqi (default) or Maghribi? (Unless you
+    /// are certain that you need the latter, you probably don't.)
+    pub letter_order: LetterOrder,
+}
+
+/// This enum allows for a selection of the letter order for _abjad_ values.
+#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum LetterOrder {
+    /// Maghribi letter order
+    Maghribi,
+    #[default]
+    /// Mashriqi letter order (default and much more common)
+    Mashriqi,
 }
 
 /// This is the trait that we implement for `&str`, allowing us to use the new
@@ -71,14 +80,7 @@ impl Abjad for &str {
         let mut last_value: u32 = 0;
 
         for character in self.chars() {
-            if let Ok(new_value) = get_letter_value(
-                character,
-                last_value,
-                prefs.count_shaddah,
-                prefs.double_alif_maddah,
-                prefs.ignore_lone_hamzah,
-                prefs.maghribi_order,
-            ) {
+            if let Ok(new_value) = get_letter_value(character, last_value, prefs) {
                 abjad_total += new_value;
                 last_value = new_value;
             } else {
@@ -95,14 +97,7 @@ impl Abjad for &str {
         let mut last_value: u32 = 0;
 
         for character in self.chars() {
-            if let Ok(new_value) = get_letter_value(
-                character,
-                last_value,
-                prefs.count_shaddah,
-                prefs.double_alif_maddah,
-                prefs.ignore_lone_hamzah,
-                prefs.maghribi_order,
-            ) {
+            if let Ok(new_value) = get_letter_value(character, last_value, prefs) {
                 abjad_total += new_value;
                 last_value = new_value;
             } else {
@@ -119,14 +114,7 @@ impl Abjad for &str {
         let mut last_value: u32 = 0;
 
         for character in self.chars() {
-            let new_value = get_letter_value(
-                character,
-                last_value,
-                prefs.count_shaddah,
-                prefs.double_alif_maddah,
-                prefs.ignore_lone_hamzah,
-                prefs.maghribi_order,
-            )?;
+            let new_value = get_letter_value(character, last_value, prefs)?;
 
             abjad_total += new_value;
             last_value = new_value;
@@ -139,24 +127,23 @@ impl Abjad for &str {
 fn get_letter_value(
     character: char,
     last_value: u32,
-    count_shaddah: bool,
-    double_alif_maddah: bool,
-    ignore_lone_hamzah: bool,
-    maghribi_order: bool,
+    prefs: AbjadPrefs,
 ) -> Result<u32, AbjadError> {
+    let maghribi_order = prefs.letter_order == LetterOrder::Maghribi;
+
     let mut letter_value: u32 = 0;
 
     match character {
         'ا' | 'أ' | 'إ' | 'ٱ' => letter_value = 1,
         'آ' => {
-            if double_alif_maddah {
+            if prefs.double_alif_maddah {
                 letter_value = 2;
             } else {
                 letter_value = 1;
             }
         }
         'ء' => {
-            if !ignore_lone_hamzah {
+            if !prefs.ignore_lone_hamzah {
                 letter_value = 1;
             }
         }
@@ -225,7 +212,7 @@ fn get_letter_value(
         }
         // Shaddah diacritic
         '\u{0651}' => {
-            if count_shaddah {
+            if prefs.count_shaddah {
                 letter_value = last_value;
             }
         }

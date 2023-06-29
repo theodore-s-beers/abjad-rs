@@ -12,4 +12,4 @@ readme = "README.md"
 repository = "https://github.com/theodore-s-beers/abjad-rs"
 
 [dependencies]
-thiserror = "1.0.37"
+thiserror = "1.0.40"

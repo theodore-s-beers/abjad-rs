@@ -1,4 +1,4 @@
-use abjad::{Abjad, AbjadPrefs};
+use abjad::{Abjad, AbjadPrefs, LetterOrder};
 
 #[test]
 fn all() {
@@ -6,7 +6,7 @@ fn all() {
 
     let prefs_mashriqi = AbjadPrefs::default();
     let prefs_maghribi = AbjadPrefs {
-        maghribi_order: true,
+        letter_order: LetterOrder::Maghribi,
         ..AbjadPrefs::default()
     };
 
