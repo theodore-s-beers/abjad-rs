@@ -28,8 +28,10 @@ pub enum AbjadError {
 }
 
 /// We need to allow some options for _abjad_ calculation. At present there are
-/// four. All are false by default. If you don't need to activate any of them,
-/// when calling one of the methods, you can pass `AbjadPrefs::default()`.
+/// four: three booleans and one `enum`. All of the booleans are false by default.
+/// The `enum` also has a default value, which should be suitable for the vast
+/// majority of use cases. If you don't need to change any of the options, then,
+/// when calling one of the methods, you can simply pass `AbjadPrefs::default()`.
 #[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AbjadPrefs {
     /// Count the [_shaddah_](https://en.wikipedia.org/wiki/Shadda) diacritic?
@@ -49,7 +51,8 @@ pub struct AbjadPrefs {
     pub letter_order: LetterOrder,
 }
 
-/// This enum allows for a selection of the letter order for _abjad_ values.
+/// This `enum` allows for a selection of the letter order for _abjad_ values
+/// (Mashriqi by default).
 #[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum LetterOrder {
     /// Maghribi letter order
