@@ -10,8 +10,10 @@
 //! - `abjad_strict` returns an error as soon as any character is not recognized.
 //!
 
+#![forbid(unsafe_code)]
 #![deny(missing_docs)]
-#![warn(clippy::pedantic, clippy::cargo)]
+#![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
+#![allow(clippy::too_long_first_doc_paragraph)]
 
 use thiserror::Error;
 

@@ -1,3 +1,6 @@
+#![forbid(unsafe_code)]
+#![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
+
 use abjad::{Abjad, AbjadPrefs, LetterOrder};
 
 #[test]
