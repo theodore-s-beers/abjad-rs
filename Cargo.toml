@@ -2,7 +2,7 @@
 name = "abjad"
 version = "0.5.0"
 authors = ["Theo Beers <theo.beers@fu-berlin.de>"]
-edition = "2021"
+edition = "2024"
 categories = ["internationalization", "text-processing"]
 description = "Calculate the numerical abjad value of Arabic-script text"
 homepage = "https://github.com/theodore-s-beers/abjad-rs"
@@ -12,4 +12,4 @@ readme = "README.md"
 repository = "https://github.com/theodore-s-beers/abjad-rs"
 
 [dependencies]
-thiserror = "2.0.3"
+thiserror = "2.0.12"
