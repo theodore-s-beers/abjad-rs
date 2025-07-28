@@ -1,6 +1,6 @@
 [package]
 name = "abjad"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Theo Beers <theo.beers@fu-berlin.de>"]
 edition = "2024"
 categories = ["internationalization", "text-processing"]
